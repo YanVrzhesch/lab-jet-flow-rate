@@ -2,7 +2,6 @@ import spidev
 import time
 import RPi.GPIO as GPIO
 
-
 ########################################
 #   Open, use and close SPI ADC
 ########################################
@@ -32,9 +31,8 @@ def deinitSpiAdc():
 
 def getAdc():
     adcResponse = spi.xfer2([0, 0, 0, 0])
-    # print(adcResponse)
+    #print(int(adcResponse[0] << 16 | adcResponse[1] << 8 | adcResponse[2]))
     return int(adcResponse[0] << 16 | adcResponse[1] << 8 | adcResponse[2])
-
 
 ########################################
 #   Setup and use GPIO for step motor

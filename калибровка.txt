@@ -1,0 +1,74 @@
+1000 steps = 5.5 см +- 0.1 см <<< неточный
+	89+-1 мм = 1640 steps
+
+d=0 <=> calibration_no_jet
+d=115+-5 Па <=> calibration_with_jet
+
+
+
+КАЛИБРОВКА:
+
+import jetFunctions as jf
+import time
+
+jf.initSpiAdc()
+
+c = []
+
+for i in range(500):
+    c.append(jf.getAdc())
+    time.sleep(0.02)
+
+filename = ""
+with open(filename, 'w') as f:
+    for line in c:
+        f.write(str(line) + '\n')
+
+jf.deinitSpiAdc()
+
+
+
+ИЗМЕРЕНИЯ:
+
+import jetFunctions as jf
+import time
+import numpy as np
+import matplotlib.pyplot as plt
+
+jf.initSpiAdc()
+jf.initStepMotorGpio()
+
+def get_pressure():
+    sump = 0
+    countp = 0
+    for i in range(20):
+        pm = jf.getAdc()
+        if 0 <= pm < 300000:
+            sump += pm
+            countp += 1
+        time.sleep(0.05)
+    return sump/countp
+
+filename = "80mm.txt"
+print("experiment begins, filename:", filename)
+a = input("confirm")
+
+N = 75
+P = [] # N давлений от x
+step_length = int(750/N)
+
+for i in range(N):
+    P.append( get_pressure() )
+    jf.stepForward(step_length)
+
+jf.stepBackward(step_length*N)
+
+with open(filename, 'w') as f:
+    for line in P:
+        f.write(str(line) + '\n')
+
+plt.plot(np.linspace(1, N, N), P)
+plt.show()
+
+jf.deinitSpiAdc()
+jf.deinitStepMotorGpio()
